@@ -1,0 +1,35 @@
+{
+  "_id":            "uuid-string",       // UUID (string), used as order_id in transactions
+  "account_id":     "uuid-string",       // references accounts.id in PostgreSQL
+
+  // Template (resolved by mobile app)
+  "template_code":  "wedding-001",
+
+  // Invitation content
+  "invitation_info": {
+      "title":          "string",
+      "groom_fullname": "string",
+      "bride_fullname": "string",
+      "partners_names": "string",            // e.g. "Ali & Zulfiya"
+      "description":    "string | null",
+      "event_date":     ISODate,
+      "event_time":     "HH:MM",            // e.g. "15:00"
+      "address":        "string",
+      "location":       "string",            // map link or coordinates
+      "venue_name":     "string | null",
+      "main_image":     "string | null",
+      "images":         ["url", ...],
+      "story":          "string | null",
+      "music":          "string | null"
+  },
+
+  // Order / lifecycle
+  "price":          Number,              // UZS, locked at creation time
+  "status":         "draft | active | expired | cancelled",
+  "public_token":   "string | null",     // set when status → active; used in /i/{token}
+  "view_count":     Number,              // default 0
+  "expires_at":     ISODate | null,
+
+  "created_at":     ISODate,
+  "updated_at":     ISODate
+}

@@ -1,0 +1,567 @@
+basePath: /
+definitions:
+  contracts.AccountContract:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  contracts.TemplateMysqlContract:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      is_deleted:
+        type: boolean
+      name:
+        type: string
+      organization_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  contracts.TempleteMongoContract:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      is_deleted:
+        type: boolean
+      name:
+        type: string
+      organization_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  requestmodels.CreateTempleteRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  requestmodels.UpdateTempleteRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  requestmodels.VerifyCodeRequest:
+    properties:
+      code:
+        type: string
+      phone:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Templete project API
+  title: Templete API
+  version: "1.0"
+paths:
+  /account/verify-code:
+    post:
+      consumes:
+      - application/json
+      description: Submit the phone number and OTP code received via Telegram bot
+        to get a bearer token
+      parameters:
+      - description: Phone and OTP code
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requestmodels.VerifyCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify OTP code
+      tags:
+      - Account
+  /api/account/get-me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.AccountContract'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current account
+      tags:
+      - Account
+  /api/templete-mongo/count:
+    get:
+      parameters:
+      - in: query
+        name: end_date
+        type: string
+      - in: query
+        name: search
+        type: string
+      - in: query
+        name: start_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Count templete mongo records
+      tags:
+      - Templete-Mongo
+  /api/templete-mongo/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Record data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requestmodels.CreateTempleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TempleteMongoContract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create templete mongo record
+      tags:
+      - Templete-Mongo
+  /api/templete-mongo/delete/{id}:
+    post:
+      parameters:
+      - description: Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TempleteMongoContract'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete templete mongo record
+      tags:
+      - Templete-Mongo
+  /api/templete-mongo/get:
+    get:
+      parameters:
+      - in: query
+        name: end_date
+        type: string
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: search
+        type: string
+      - in: query
+        name: skip
+        type: integer
+      - in: query
+        name: start_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/contracts.TempleteMongoContract'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all templete mongo records
+      tags:
+      - Templete-Mongo
+  /api/templete-mongo/get/{id}:
+    get:
+      parameters:
+      - description: Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TempleteMongoContract'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get templete mongo record by ID
+      tags:
+      - Templete-Mongo
+  /api/templete-mongo/update/{id}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Record data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requestmodels.UpdateTempleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TempleteMongoContract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update templete mongo record
+      tags:
+      - Templete-Mongo
+  /api/templete-mysql/count:
+    get:
+      parameters:
+      - in: query
+        name: end_date
+        type: string
+      - in: query
+        name: search
+        type: string
+      - in: query
+        name: start_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Count templete mysql records
+      tags:
+      - Templete-MySQL
+  /api/templete-mysql/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Record data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requestmodels.CreateTempleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TemplateMysqlContract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create templete mysql record
+      tags:
+      - Templete-MySQL
+  /api/templete-mysql/delete/{id}:
+    post:
+      parameters:
+      - description: Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TemplateMysqlContract'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete templete mysql record
+      tags:
+      - Templete-MySQL
+  /api/templete-mysql/get:
+    get:
+      parameters:
+      - in: query
+        name: end_date
+        type: string
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: search
+        type: string
+      - in: query
+        name: skip
+        type: integer
+      - in: query
+        name: start_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/contracts.TemplateMysqlContract'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all templete mysql records
+      tags:
+      - Templete-MySQL
+  /api/templete-mysql/get/{id}:
+    get:
+      parameters:
+      - description: Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TemplateMysqlContract'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get templete mysql record by ID
+      tags:
+      - Templete-MySQL
+  /api/templete-mysql/update/{id}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Record data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requestmodels.UpdateTempleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TemplateMysqlContract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update templete mysql record
+      tags:
+      - Templete-MySQL
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

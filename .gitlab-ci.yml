@@ -1,0 +1,26 @@
+include:
+  - project: devops/ci-templates
+    ref: v2.0.0
+    file: /.erp-docker-swarm.yml
+
+
+variables:
+  PROJECT: warehouse-operation
+
+prepare_env:
+  extends: .use_env_file
+
+build:
+  extends: .build_template
+
+deploy_master:
+  extends: .deploy_template_master
+
+deploy_staging:
+  extends: .deploy_template_staging
+
+notify_master:
+  extends: .telegram_notify_master
+
+notify_staging:
+  extends: .telegram_notify_staging
