@@ -12,9 +12,12 @@ import (
 	"saidakbar.origin/plugins"
 	"saidakbar.origin/repository"
 	account_service "saidakbar.origin/services/account"
+	order_service "saidakbar.origin/services/order"
+	payment_service "saidakbar.origin/services/payment"
 	telegram_service "saidakbar.origin/services/telegram"
 	templete_mongo "saidakbar.origin/services/templete-mongo"
 	templete_mysql "saidakbar.origin/services/templete-mysql"
+	transaction_service "saidakbar.origin/services/transaction"
 
 	"github.com/joho/godotenv"
 )
@@ -52,11 +55,15 @@ func main() {
 	var templeteMongoRepository = repository.NewTempleteMongoRepository(mongoDB)
 	var templatMysqlRepository = repository.NewTemplateMysqlRepository(mysqlDB)
 	var accountRepository = repository.NewAccountRepository(mysqlDB)
+	var orderRepository = repository.NewOrderRepository(mongoDB)
+	var txRepository = repository.NewTransactionRepository(mysqlDB)
 
 	var templeteMongoService = templete_mongo.NewTempleteMongoService(templeteMongoRepository)
 	var templatMysqlService = templete_mysql.NewTemplateMysqlService(templatMysqlRepository)
 	var accountSvc = account_service.NewService(accountRepository, otpCache, tokenCache)
-	// TODO: add more services here
+	var orderSvc = order_service.NewOrderService(orderRepository)
+	var paymentSvc = payment_service.NewPaymentService(configs, accountRepository, orderRepository, txRepository)
+	var txSvc = transaction_service.NewTransactionService(txRepository, orderRepository)
 
 	telegramSvc, err := telegram_service.NewService(configs.TelegramBotToken, accountRepository, otpCache)
 	if err != nil {
@@ -72,6 +79,11 @@ func main() {
 		accountSvc,
 		templeteMongoService,
 		templatMysqlService,
+		orderSvc,
+		paymentSvc,
+		txSvc,
+		configs.PaymeApiKeyProd,
+		configs.PaymeApiKeyStaging,
 	)
 
 	log.Fatalln(server.Start())

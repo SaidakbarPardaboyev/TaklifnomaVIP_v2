@@ -10,4 +10,14 @@ const (
 	FieldTempleteDeletedAt      = "deleted_at"
 	FieldTempleteCreatedAt      = "created_at"
 	FieldTempleteUpdatedAt      = "updated_at"
+
+	FieldOrderID             = "_id"
+	FieldOrderAccountID      = "account_id"
+	FieldOrderTemplateCode   = "template_code"
+	FieldOrderStatus         = "status"
+	FieldOrderViewCount      = "view_count"
+	FieldOrderPrice          = "price"
+	FieldOrderExpiresAt      = "expires_at"
+	FieldOrderCreatedAt      = "created_at"
+	FieldOrderUpdatedAt      = "updated_at"
 )

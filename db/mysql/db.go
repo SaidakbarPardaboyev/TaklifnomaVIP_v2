@@ -21,7 +21,7 @@ func (d *database) Migrate() error {
 	return d.db.AutoMigrate(
 		mysql_entity.TempleteModel{},
 		mysql_entity.AccountModel{},
-		// TODO: add your GORM model structs here
+		mysql_entity.TransactionModel{},
 	)
 }
 

@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 const (
 	configApiServerBindAddr = "API_SERVER_BIND_ADDR"
 	configAllowedOrigin     = "ALLOWED_ORIGIN"
@@ -19,8 +21,11 @@ const (
 
 	configTelegramBotToken = "TELEGRAM_BOT_TOKEN"
 
-	// TODO: add constant keys for each external API host
-	// Example: configInternalExampleApiHost = "EXAMPLE_API_ADDR"
+	configPaymeMerchantID      = "PAYME_MERCHANT_ID"
+	configPaymeApiKeyProd      = "PAYME_API_KEY_PROD"
+	configPaymeApiKeyStaging   = "PAYME_API_KEY_STAGING"
+	configPaymeRedirectionLink = "PAYME_REDIRECTION_LINK"
+	configInvitationPrice      = "INVITATION_PRICE"
 )
 
 func Load(provider *EnvProvider) (cfg *Config, err error) {
@@ -70,11 +75,27 @@ func Load(provider *EnvProvider) (cfg *Config, err error) {
 		return
 	}
 
-	// TODO: load host fields for each external API client
-	// Example:
-	// if cfg.InternalExampleApiHost, err = provider.Get(configInternalExampleApiHost); err != nil {
-	// 	return
-	// }
+	if cfg.PaymeMerchantID, err = provider.Get(configPaymeMerchantID); err != nil {
+		return
+	}
+	if cfg.PaymeApiKeyProd, err = provider.Get(configPaymeApiKeyProd); err != nil {
+		return
+	}
+	if cfg.PaymeApiKeyStaging, err = provider.Get(configPaymeApiKeyStaging); err != nil {
+		return
+	}
+	if cfg.PaymeRedirectionLink, err = provider.Get(configPaymeRedirectionLink); err != nil {
+		return
+	}
+
+	var priceStr string
+	if priceStr, err = provider.Get(configInvitationPrice); err != nil {
+		return
+	}
+	if _, err = fmt.Sscanf(priceStr, "%f", &cfg.InvitationPrice); err != nil {
+		err = fmt.Errorf("invalid %s: %w", configInvitationPrice, err)
+		return
+	}
 
 	return cfg, nil
 }

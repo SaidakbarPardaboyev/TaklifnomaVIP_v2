@@ -19,6 +19,9 @@ type Config struct {
 
 	TelegramBotToken string
 
-	// TODO: add host fields for each external API client your service depends on
-	// Example: InternalExampleApiHost string
+	PaymeMerchantID         string
+	PaymeApiKeyProd         string
+	PaymeApiKeyStaging      string
+	PaymeRedirectionLink    string
+	InvitationPrice         float64
 }

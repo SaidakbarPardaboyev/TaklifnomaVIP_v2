@@ -6,8 +6,11 @@ import (
 	"saidakbar.origin/caching"
 	_ "saidakbar.origin/docs"
 	account_service "saidakbar.origin/services/account"
+	order_service "saidakbar.origin/services/order"
+	payment_service "saidakbar.origin/services/payment"
 	templete_mongo "saidakbar.origin/services/templete-mongo"
 	templete_mysql "saidakbar.origin/services/templete-mysql"
+	transaction_service "saidakbar.origin/services/transaction"
 )
 
 // @title           Templete API
@@ -32,7 +35,11 @@ type apiServer struct {
 	accountService         account_service.Service
 	templeteMongoService   templete_mongo.Service
 	templatMysqlService    templete_mysql.Service
-	// TODO: add more service fields here
+	orderService           order_service.Service
+	paymentService         payment_service.Service
+	transactionService     transaction_service.Service
+	paymeApiKeyProd        string
+	paymeApiKeyStaging     string
 }
 
 func (apiServer *apiServer) Start() error {
@@ -47,7 +54,11 @@ func NewApiServer(
 	accountService account_service.Service,
 	templeteMongoService templete_mongo.Service,
 	templatMysqlService templete_mysql.Service,
-	// TODO: add more services here
+	orderService order_service.Service,
+	paymentService payment_service.Service,
+	transactionService transaction_service.Service,
+	paymeApiKeyProd string,
+	paymeApiKeyStaging string,
 ) Server {
 	as := &apiServer{
 		bindAddr:               bindAddr,
@@ -57,6 +68,11 @@ func NewApiServer(
 		accountService:         accountService,
 		templeteMongoService:   templeteMongoService,
 		templatMysqlService:    templatMysqlService,
+		orderService:           orderService,
+		paymentService:         paymentService,
+		transactionService:     transactionService,
+		paymeApiKeyProd:        paymeApiKeyProd,
+		paymeApiKeyStaging:     paymeApiKeyStaging,
 	}
 
 	as.server.Use(middlewares.Cors(allowedOrigins))

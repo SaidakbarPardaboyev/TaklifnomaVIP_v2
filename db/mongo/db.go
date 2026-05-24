@@ -14,7 +14,7 @@ import (
 
 const (
 	templete = "templete"
-	// TODO: add a constant per collection your service owns
+	orders   = "orders"
 )
 
 type mongoDatabase struct {
@@ -24,6 +24,7 @@ type mongoDatabase struct {
 }
 
 func (db *mongoDatabase) TempleteCollection() *mongo.Collection { return db.collection(templete) }
+func (db *mongoDatabase) OrdersCollection() *mongo.Collection   { return db.collection(orders) }
 
 func NewDatabase(connectionString string, databaseName string) Database {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
@@ -73,7 +74,12 @@ func (db *mongoDatabase) collection(name string) *mongo.Collection {
 }
 
 func (db *mongoDatabase) createIndexes() (err error) {
-	// TODO: add index creation blocks for each collection
+	ordersCol := db.OrdersCollection()
+	_, _ = ordersCol.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
+		{Keys: bson.D{{Key: "account_id", Value: 1}}},
+		{Keys: bson.D{{Key: "status", Value: 1}}},
+		{Keys: bson.D{{Key: "created_at", Value: -1}}},
+	})
 	return
 }
 
