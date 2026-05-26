@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"saidakbar.origin/api-server/contracts"
@@ -39,8 +38,9 @@ func (c *orderController) Create(ctx *gin.Context) {
 	}
 
 	acc := middlewares.GetAccount(ctx)
-	result, err := c.orderService.Create(order_service.CreateOrderModel{
-		AccountID:    acc.ActiveOrganization.ID,
+
+	switch result, err := c.orderService.Create(order_service.CreateOrderModel{
+		AccountID:    acc.ID,
 		TemplateCode: req.TemplateCode,
 		InvitationInfo: order_service.InvitationInfoModel{
 			Title:         req.InvitationInfo.Title,
@@ -58,13 +58,12 @@ func (c *orderController) Create(ctx *gin.Context) {
 			Story:         req.InvitationInfo.Story,
 			Music:         req.InvitationInfo.Music,
 		},
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	default:
+		ctx.JSON(http.StatusCreated, contracts.CreateOrderContract(result.Order))
 	}
-
-	ctx.JSON(http.StatusCreated, contracts.CreateOrderContract(result.Order))
 }
 
 func (c *orderController) GetAll(ctx *gin.Context) {
@@ -77,39 +76,23 @@ func (c *orderController) GetAll(ctx *gin.Context) {
 	acc := middlewares.GetAccount(ctx)
 
 	model := order_service.GetAllOrdersModel{
-		AccountID:    acc.ActiveOrganization.ID,
+		AccountID:    acc.ID,
 		Status:       req.Status,
 		TemplateCode: req.TemplateCode,
 		Page:         req.Page,
 		Limit:        req.Limit,
 		SortBy:       req.SortBy,
 		Order:        req.Order,
+		FromDate:     req.GetDateTimeStart(),
+		ToDate:       req.GetDateTimeEnd(),
 	}
 
-	if req.FromDate != nil {
-		t, err := time.Parse("2006-01-02", *req.FromDate)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid from_date format, use YYYY-MM-DD"})
-			return
-		}
-		model.FromDate = &t
-	}
-	if req.ToDate != nil {
-		t, err := time.Parse("2006-01-02", *req.ToDate)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid to_date format, use YYYY-MM-DD"})
-			return
-		}
-		model.ToDate = &t
-	}
-
-	result, err := c.orderService.GetAll(model)
-	if err != nil {
+	switch result, err := c.orderService.GetAll(model); {
+	case err != nil:
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.CreateOrderListContract(result.Orders))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.CreateOrderListContract(result.Orders))
 }
 
 func (c *orderController) GetByID(ctx *gin.Context) {
@@ -118,7 +101,7 @@ func (c *orderController) GetByID(ctx *gin.Context) {
 
 	switch result, err := c.orderService.GetByID(order_service.GetOrderByIDModel{
 		ID:        id,
-		AccountID: acc.ActiveOrganization.ID,
+		AccountID: acc.ID,
 	}); {
 	case err != nil:
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -148,7 +131,7 @@ func (c *orderController) Update(ctx *gin.Context) {
 
 	switch result, err := c.orderService.Update(order_service.UpdateOrderModel{
 		ID:        id,
-		AccountID: acc.ActiveOrganization.ID,
+		AccountID: acc.ID,
 		InvitationInfo: order_service.InvitationInfoModel{
 			Title:         req.InvitationInfo.Title,
 			GroomFullname: req.InvitationInfo.GroomFullname,
@@ -185,7 +168,7 @@ func (c *orderController) Delete(ctx *gin.Context) {
 
 	switch result, err := c.orderService.Delete(order_service.DeleteOrderModel{
 		ID:        id,
-		AccountID: acc.ActiveOrganization.ID,
+		AccountID: acc.ID,
 	}); {
 	case err != nil:
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

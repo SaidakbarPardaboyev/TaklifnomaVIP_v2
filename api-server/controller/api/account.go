@@ -13,6 +13,7 @@ import (
 type AccountController interface {
 	VerifyCode(ginContext *gin.Context)
 	GetMe(ginContext *gin.Context)
+	UpdateMe(ginContext *gin.Context)
 }
 
 type accountController struct {
@@ -53,4 +54,28 @@ func (c *accountController) VerifyCode(ginContext *gin.Context) {
 func (c *accountController) GetMe(ginContext *gin.Context) {
 	acc := middlewares.GetAccount(ginContext)
 	ginContext.JSON(http.StatusOK, contracts.CreateAccountContract(acc))
+}
+
+func (c *accountController) UpdateMe(ginContext *gin.Context) {
+	var req requestmodels.UpdateAccountRequest
+	if err := ginContext.ShouldBindJSON(&req); err != nil {
+		ginContext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := req.Validate(); err != nil {
+		ginContext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	acc := middlewares.GetAccount(ginContext)
+
+	switch result, err := c.accountService.UpdateAccount(account.UpdateAccountModel{
+		ID:       acc.ID,
+		FullName: req.FullName,
+	}); {
+	case err != nil:
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	default:
+		ginContext.JSON(http.StatusOK, contracts.CreateAccountContractFromEntity(result.Account))
+	}
 }

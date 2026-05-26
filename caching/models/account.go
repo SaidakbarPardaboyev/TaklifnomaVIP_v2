@@ -1,15 +1,18 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import "time"
 
 type Account struct {
-	ID                 primitive.ObjectID `json:"id"`
-	Username           string             `json:"username"`
-	Organizations      []*Organization    `json:"organizations"`
-	Name               string             `json:"name"`
-	Type               byte               `json:"type"`
-	ActiveOrganization *Organization      `json:"active_organization"`
-	TokenType          byte               `json:"token_type"`
+	ID        string     `json:"id"`
+	FullName  string     `json:"full_name"`
+	Phone     string     `json:"phone"`
+	ChatID    int64      `json:"chat_id"`
+	IsActive  bool       `json:"is_active"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
+	IsDeleted bool       `json:"is_deleted"`
+	TokenType byte       `json:"token_type"`
 }
 
 type Organization struct {
@@ -17,24 +20,4 @@ type Organization struct {
 	Name  string  `json:"name"`
 	Inn   *string `json:"inn"`
 	Pinfl *string `json:"pinfl"`
-}
-
-func (o Organization) GetInn() string {
-	if o.Inn != nil {
-		return *o.Inn
-	}
-
-	return ""
-}
-
-func (o Organization) GetPinfl() string {
-	if o.Pinfl != nil {
-		return *o.Pinfl
-	}
-
-	return ""
-}
-
-func (o Organization) IsSameInnOrPinfl(innOrPinfl string) bool {
-	return o.GetInn() == innOrPinfl || o.GetPinfl() == innOrPinfl
 }

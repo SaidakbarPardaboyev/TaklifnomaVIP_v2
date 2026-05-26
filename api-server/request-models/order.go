@@ -60,10 +60,18 @@ func (r UpdateOrderRequest) Validate() error {
 type GetAllOrdersRequest struct {
 	Status       *string `form:"status"`
 	TemplateCode *string `form:"template_code"`
-	FromDate     *string `form:"from_date"`
-	ToDate       *string `form:"to_date"`
+	DateStart    *string `form:"from_date"`
+	DateEnd      *string `form:"to_date"`
 	Page         *int    `form:"page"`
 	Limit        *int    `form:"limit"`
 	SortBy       *string `form:"sort_by"`
 	Order        *string `form:"order"`
+}
+
+func (rm *GetAllOrdersRequest) GetDateTimeStart() *time.Time {
+	return parseDateTime(rm.DateStart)
+}
+
+func (rm *GetAllOrdersRequest) GetDateTimeEnd() *time.Time {
+	return parseDateTime(rm.DateEnd)
 }

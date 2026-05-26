@@ -112,42 +112,57 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mongo/count": {
-            "get": {
+        "/api/account/update-me": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-Mongo"
+                    "Account"
                 ],
-                "summary": "Count templete mongo records",
+                "summary": "Update current account",
                 "parameters": [
                     {
-                        "type": "string",
-                        "name": "end_date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "start_date",
-                        "in": "query"
+                        "description": "Account update info",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requestmodels.UpdateAccountRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/contracts.AccountContract"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
@@ -162,7 +177,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mongo/create": {
+        "/api/order/create": {
             "post": {
                 "security": [
                     {
@@ -176,29 +191,38 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-Mongo"
+                    "Order"
                 ],
-                "summary": "Create templete mongo record",
+                "summary": "Create a new order",
                 "parameters": [
                     {
-                        "description": "Record data",
+                        "description": "Order creation payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requestmodels.CreateTempleteRequest"
+                            "$ref": "#/definitions/requestmodels.CreateOrderRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/contracts.TempleteMongoContract"
+                            "$ref": "#/definitions/contracts.OrderContract"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -218,8 +242,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mongo/delete/{id}": {
-            "post": {
+        "/api/order/delete/{id}": {
+            "delete": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -229,13 +253,88 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-Mongo"
+                    "Order"
                 ],
-                "summary": "Delete templete mongo record",
+                "summary": "Cancel/delete a draft order",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Record ID",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/order/get/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Get order by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -245,7 +344,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contracts.TempleteMongoContract"
+                            "$ref": "#/definitions/contracts.OrderContract"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -269,7 +386,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mongo/get": {
+        "/api/order/list": {
             "get": {
                 "security": [
                     {
@@ -280,33 +397,56 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-Mongo"
+                    "Order"
                 ],
-                "summary": "Get all templete mongo records",
+                "summary": "List orders for current account",
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "end_date",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by template code",
+                        "name": "template_code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter from date (RFC3339)",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter to date (RFC3339)",
+                        "name": "to_date",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "skip",
+                        "description": "Sort field",
+                        "name": "sort_by",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "name": "start_date",
+                        "description": "Sort direction (asc/desc)",
+                        "name": "order",
                         "in": "query"
                     }
                 ],
@@ -316,7 +456,25 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/contracts.TempleteMongoContract"
+                                "$ref": "#/definitions/contracts.OrderContract"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     },
@@ -332,34 +490,73 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mongo/get/{id}": {
-            "get": {
+        "/api/order/update/{id}": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-Mongo"
+                    "Order"
                 ],
-                "summary": "Get templete mongo record by ID",
+                "summary": "Update a draft order",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Record ID",
+                        "description": "Order ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Order update payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requestmodels.UpdateOrderRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contracts.TempleteMongoContract"
+                            "$ref": "#/definitions/contracts.OrderContract"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -371,6 +568,15 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -383,7 +589,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mongo/update/{id}": {
+        "/api/payment/generate-link": {
             "post": {
                 "security": [
                     {
@@ -397,24 +603,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-Mongo"
+                    "Payment"
                 ],
-                "summary": "Update templete mongo record",
+                "summary": "Generate a Payme payment link for an order",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Record data",
+                        "description": "Order ID and amount",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requestmodels.UpdateTempleteRequest"
+                            "$ref": "#/definitions/requestmodels.GeneratePaymeLinkRequest"
                         }
                     }
                 ],
@@ -422,11 +621,29 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contracts.TempleteMongoContract"
+                            "$ref": "#/definitions/contracts.PaymentLinkContract"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -455,7 +672,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mysql/count": {
+        "/api/transaction/get/{order_id}": {
             "get": {
                 "security": [
                     {
@@ -466,120 +683,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-MySQL"
+                    "Transaction"
                 ],
-                "summary": "Count templete mysql records",
+                "summary": "Get transaction by order ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "end_date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "start_date",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/templete-mysql/create": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Templete-MySQL"
-                ],
-                "summary": "Create templete mysql record",
-                "parameters": [
-                    {
-                        "description": "Record data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requestmodels.CreateTempleteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/contracts.TemplateMysqlContract"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/templete-mysql/delete/{id}": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Templete-MySQL"
-                ],
-                "summary": "Delete templete mysql record",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Record ID",
-                        "name": "id",
+                        "description": "Order ID",
+                        "name": "order_id",
                         "in": "path",
                         "required": true
                     }
@@ -588,7 +699,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contracts.TemplateMysqlContract"
+                            "$ref": "#/definitions/contracts.TransactionContract"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -612,7 +741,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mysql/get": {
+        "/api/transaction/list": {
             "get": {
                 "security": [
                     {
@@ -623,90 +752,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-MySQL"
+                    "Transaction"
                 ],
-                "summary": "Get all templete mysql records",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "end_date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "skip",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "start_date",
-                        "in": "query"
-                    }
-                ],
+                "summary": "List transactions for current account",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/contracts.TemplateMysqlContract"
+                                "$ref": "#/definitions/contracts.TransactionContract"
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/templete-mysql/get/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Templete-MySQL"
-                ],
-                "summary": "Get templete mysql record by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/contracts.TemplateMysqlContract"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -726,13 +786,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/templete-mysql/update/{id}": {
+        "/payme": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
+                "description": "Handles Payme JSON-RPC calls: CheckPerformTransaction, CreateTransaction, PerformTransaction, CancelTransaction, CheckTransaction, GetStatement",
                 "consumes": [
                     "application/json"
                 ],
@@ -740,24 +796,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Templete-MySQL"
+                    "Payment"
                 ],
-                "summary": "Update templete mysql record",
+                "summary": "Payme payment gateway webhook",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Record ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Record data",
+                        "description": "Payme JSON-RPC request",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requestmodels.UpdateTempleteRequest"
+                            "type": "object",
+                            "properties": {
+                                "method": {
+                                    "type": "string"
+                                },
+                                "params": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 ],
@@ -765,16 +822,37 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/contracts.TemplateMysqlContract"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/public/i/{id}": {
+            "get": {
+                "description": "Returns the invitation details and increments view count. No authentication required.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invitation"
+                ],
+                "summary": "Get public invitation by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invitation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contracts.OrderContract"
                         }
                     },
                     "404": {
@@ -814,71 +892,219 @@ const docTemplate = `{
                 }
             }
         },
-        "contracts.TemplateMysqlContract": {
+        "contracts.InvitationInfoContract": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "bride_fullname": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "event_time": {
+                    "type": "string"
+                },
+                "groom_fullname": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "location": {
+                    "type": "string"
+                },
+                "main_image": {
+                    "type": "string"
+                },
+                "music": {
+                    "type": "string"
+                },
+                "partners_names": {
+                    "type": "string"
+                },
+                "story": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "venue_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "contracts.OrderContract": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
-                "deleted_at": {
+                "expires_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "is_deleted": {
-                    "type": "boolean"
+                "invitation_info": {
+                    "$ref": "#/definitions/contracts.InvitationInfoContract"
                 },
-                "name": {
+                "price": {
+                    "type": "number"
+                },
+                "status": {
                     "type": "string"
                 },
-                "organization_id": {
+                "template_code": {
                     "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "view_count": {
+                    "type": "integer"
                 }
             }
         },
-        "contracts.TempleteMongoContract": {
+        "contracts.PaymentLinkContract": {
             "type": "object",
             "properties": {
-                "created_at": {
+                "link": {
+                    "type": "string"
+                }
+            }
+        },
+        "contracts.TransactionContract": {
+            "type": "object",
+            "properties": {
+                "account_id": {
                     "type": "string"
                 },
-                "deleted_at": {
-                    "type": "string"
+                "amount": {
+                    "type": "number"
+                },
+                "cancel_time": {
+                    "type": "integer"
+                },
+                "created_time": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
-                "is_deleted": {
-                    "type": "boolean"
-                },
-                "name": {
+                "order_id": {
                     "type": "string"
                 },
-                "organization_id": {
+                "payment_id": {
                     "type": "string"
                 },
-                "updated_at": {
+                "perform_time": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requestmodels.CreateOrderRequest": {
+            "type": "object",
+            "properties": {
+                "invitation_info": {
+                    "$ref": "#/definitions/requestmodels.InvitationInfoRequest"
+                },
+                "template_code": {
                     "type": "string"
                 }
             }
         },
-        "requestmodels.CreateTempleteRequest": {
+        "requestmodels.GeneratePaymeLinkRequest": {
             "type": "object",
             "properties": {
-                "name": {
+                "amount": {
+                    "type": "number"
+                },
+                "order_id": {
                     "type": "string"
                 }
             }
         },
-        "requestmodels.UpdateTempleteRequest": {
+        "requestmodels.InvitationInfoRequest": {
             "type": "object",
             "properties": {
-                "name": {
+                "address": {
                     "type": "string"
+                },
+                "bride_fullname": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "event_time": {
+                    "type": "string"
+                },
+                "groom_fullname": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "location": {
+                    "type": "string"
+                },
+                "main_image": {
+                    "type": "string"
+                },
+                "music": {
+                    "type": "string"
+                },
+                "partners_names": {
+                    "type": "string"
+                },
+                "story": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "venue_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "requestmodels.UpdateAccountRequest": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "requestmodels.UpdateOrderRequest": {
+            "type": "object",
+            "properties": {
+                "invitation_info": {
+                    "$ref": "#/definitions/requestmodels.InvitationInfoRequest"
                 }
             }
         },
@@ -909,8 +1135,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{"http", "https"},
-	Title:            "Templete API",
-	Description:      "Templete project API",
+	Title:            "TaklifnomaVIP API",
+	Description:      "Wedding invitation platform API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -19,7 +19,6 @@ func (d *database) GetDB() *gorm.DB {
 
 func (d *database) Migrate() error {
 	return d.db.AutoMigrate(
-		mysql_entity.TempleteModel{},
 		mysql_entity.AccountModel{},
 		mysql_entity.TransactionModel{},
 	)

@@ -14,8 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	api_ctrl "saidakbar.origin/api-server/controller/api"
 	middlewares "saidakbar.origin/api-server/middleware"
 	"saidakbar.origin/caching/models"
@@ -59,7 +57,8 @@ func (m *mockTokenCache) SetAccount(_ string, _ *models.Account, _ time.Duration
 // ─── Mock: AccountService ────────────────────────────────────────────────────
 
 type mockAccountService struct {
-	VerifyCodeFn func(account_service.VerifyCodeModel) (*dto.VerifyCodeResult, error)
+	VerifyCodeFn     func(account_service.VerifyCodeModel) (*dto.VerifyCodeResult, error)
+	UpdateAccountFn  func(account_service.UpdateAccountModel) (*account_service.UpdateAccountResult, error)
 }
 
 func (m *mockAccountService) VerifyCode(model account_service.VerifyCodeModel) (*dto.VerifyCodeResult, error) {
@@ -67,6 +66,13 @@ func (m *mockAccountService) VerifyCode(model account_service.VerifyCodeModel) (
 		return &dto.VerifyCodeResult{}, nil
 	}
 	return m.VerifyCodeFn(model)
+}
+
+func (m *mockAccountService) UpdateAccount(model account_service.UpdateAccountModel) (*account_service.UpdateAccountResult, error) {
+	if m.UpdateAccountFn == nil {
+		return &account_service.UpdateAccountResult{Account: &mysql_entity.AccountModel{}}, nil
+	}
+	return m.UpdateAccountFn(model)
 }
 
 // ─── Mock: OrderService ───────────────────────────────────────────────────────
@@ -203,14 +209,10 @@ func (m *mockTransactionService) GetList(model transaction_service.GetListModel)
 
 func testAccount() *models.Account {
 	return &models.Account{
-		ID:        primitive.NewObjectID(),
-		Username:  "+998901234567",
-		Name:      "Ali Valiyev",
+		ID:        testAccountID,
+		FullName:  "Ali Valiyev",
+		Phone:     "+998901234567",
 		TokenType: 0,
-		ActiveOrganization: &models.Organization{
-			ID:   testAccountID,
-			Name: "Ali Valiyev",
-		},
 	}
 }
 
@@ -287,6 +289,7 @@ func buildEngine(
 
 	apiGrp := r.Group("/api", auth)
 	apiGrp.GET("/account/get-me", accountCtrl.GetMe)
+	apiGrp.PUT("/account/update-me", accountCtrl.UpdateMe)
 
 	v1 := r.Group("/v1", auth)
 
@@ -413,6 +416,46 @@ func TestGetMe(t *testing.T) {
 	t.Run("no token", func(t *testing.T) {
 		w := do(buildEngine(&mockAccountService{}, nil, nil, nil), http.MethodGet, "/api/account/get-me", "")
 		assert.Equal(t, 401, w.Code)
+	})
+}
+
+func TestUpdateMe(t *testing.T) {
+	const path = "/api/account/update-me"
+
+	t.Run("success", func(t *testing.T) {
+		svc := &mockAccountService{UpdateAccountFn: func(m account_service.UpdateAccountModel) (*account_service.UpdateAccountResult, error) {
+			return &account_service.UpdateAccountResult{Account: &mysql_entity.AccountModel{
+				BaseEntity: mysql_entity.BaseEntity{ID: testAccountID},
+				FullName:   m.FullName,
+				Phone:      "+998901234567",
+			}}, nil
+		}}
+		w := doAuth(buildEngine(svc, nil, nil, nil), http.MethodPut, path, `{"full_name":"New Name"}`)
+		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, "New Name", bodyJSON(t, w)["name"])
+	})
+
+	t.Run("bad JSON", func(t *testing.T) {
+		w := doAuth(buildEngine(&mockAccountService{}, nil, nil, nil), http.MethodPut, path, `not-json`)
+		assert.Equal(t, 400, w.Code)
+	})
+
+	t.Run("empty full_name", func(t *testing.T) {
+		w := doAuth(buildEngine(&mockAccountService{}, nil, nil, nil), http.MethodPut, path, `{"full_name":""}`)
+		assert.Equal(t, 400, w.Code)
+	})
+
+	t.Run("no token", func(t *testing.T) {
+		w := do(buildEngine(&mockAccountService{}, nil, nil, nil), http.MethodPut, path, `{"full_name":"New Name"}`)
+		assert.Equal(t, 401, w.Code)
+	})
+
+	t.Run("service error", func(t *testing.T) {
+		svc := &mockAccountService{UpdateAccountFn: func(_ account_service.UpdateAccountModel) (*account_service.UpdateAccountResult, error) {
+			return nil, errors.New("db error")
+		}}
+		w := doAuth(buildEngine(svc, nil, nil, nil), http.MethodPut, path, `{"full_name":"New Name"}`)
+		assert.Equal(t, 500, w.Code)
 	})
 }
 

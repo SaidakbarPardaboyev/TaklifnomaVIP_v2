@@ -1,6 +1,9 @@
 package contracts
 
-import "saidakbar.origin/caching/models"
+import (
+	mysql_entity "saidakbar.origin/db/mysql/entity"
+	"saidakbar.origin/caching/models"
+)
 
 type AccountContract struct {
 	ID    string `json:"id"`
@@ -14,8 +17,20 @@ func CreateAccountContract(acc *models.Account) AccountContract {
 	}
 
 	return AccountContract{
-		ID:    acc.ActiveOrganization.ID,
-		Name:  acc.Name,
-		Phone: acc.Username,
+		ID:    acc.ID,
+		Name:  acc.FullName,
+		Phone: acc.Phone,
+	}
+}
+
+func CreateAccountContractFromEntity(acc *mysql_entity.AccountModel) AccountContract {
+	if acc == nil {
+		return AccountContract{}
+	}
+
+	return AccountContract{
+		ID:    acc.ID,
+		Name:  acc.FullName,
+		Phone: acc.Phone,
 	}
 }

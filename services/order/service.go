@@ -80,7 +80,7 @@ func (s *orderService) GetPublic(id string) (*GetOrderByIDResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	if order == nil {
+	if order == nil || order.Status != entity.OrderStatusActive {
 		result.NotFound = true
 		return result, nil
 	}

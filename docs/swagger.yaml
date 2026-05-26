@@ -9,49 +9,146 @@ definitions:
       phone:
         type: string
     type: object
-  contracts.TemplateMysqlContract:
+  contracts.InvitationInfoContract:
     properties:
+      address:
+        type: string
+      bride_fullname:
+        type: string
+      description:
+        type: string
+      event_date:
+        type: string
+      event_time:
+        type: string
+      groom_fullname:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      location:
+        type: string
+      main_image:
+        type: string
+      music:
+        type: string
+      partners_names:
+        type: string
+      story:
+        type: string
+      title:
+        type: string
+      venue_name:
+        type: string
+    type: object
+  contracts.OrderContract:
+    properties:
+      account_id:
+        type: string
       created_at:
         type: string
-      deleted_at:
+      expires_at:
         type: string
       id:
         type: string
-      is_deleted:
-        type: boolean
-      name:
+      invitation_info:
+        $ref: '#/definitions/contracts.InvitationInfoContract'
+      price:
+        type: number
+      status:
         type: string
-      organization_id:
+      template_code:
         type: string
       updated_at:
         type: string
+      view_count:
+        type: integer
     type: object
-  contracts.TempleteMongoContract:
+  contracts.PaymentLinkContract:
     properties:
-      created_at:
+      link:
         type: string
-      deleted_at:
+    type: object
+  contracts.TransactionContract:
+    properties:
+      account_id:
         type: string
+      amount:
+        type: number
+      cancel_time:
+        type: integer
+      created_time:
+        type: integer
       id:
         type: string
-      is_deleted:
-        type: boolean
-      name:
+      order_id:
         type: string
-      organization_id:
+      payment_id:
         type: string
-      updated_at:
+      perform_time:
+        type: integer
+      reason:
+        type: integer
+      state:
+        type: integer
+    type: object
+  requestmodels.CreateOrderRequest:
+    properties:
+      invitation_info:
+        $ref: '#/definitions/requestmodels.InvitationInfoRequest'
+      template_code:
         type: string
     type: object
-  requestmodels.CreateTempleteRequest:
+  requestmodels.GeneratePaymeLinkRequest:
     properties:
-      name:
+      amount:
+        type: number
+      order_id:
         type: string
     type: object
-  requestmodels.UpdateTempleteRequest:
+  requestmodels.InvitationInfoRequest:
     properties:
-      name:
+      address:
         type: string
+      bride_fullname:
+        type: string
+      description:
+        type: string
+      event_date:
+        type: string
+      event_time:
+        type: string
+      groom_fullname:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      location:
+        type: string
+      main_image:
+        type: string
+      music:
+        type: string
+      partners_names:
+        type: string
+      story:
+        type: string
+      title:
+        type: string
+      venue_name:
+        type: string
+    type: object
+  requestmodels.UpdateAccountRequest:
+    properties:
+      full_name:
+        type: string
+    type: object
+  requestmodels.UpdateOrderRequest:
+    properties:
+      invitation_info:
+        $ref: '#/definitions/requestmodels.InvitationInfoRequest'
     type: object
   requestmodels.VerifyCodeRequest:
     properties:
@@ -63,8 +160,8 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: Templete project API
-  title: Templete API
+  description: Wedding invitation platform API
+  title: TaklifnomaVIP API
   version: "1.0"
 paths:
   /account/verify-code:
@@ -130,60 +227,36 @@ paths:
       summary: Get current account
       tags:
       - Account
-  /api/templete-mongo/count:
-    get:
-      parameters:
-      - in: query
-        name: end_date
-        type: string
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: start_date
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Count templete mongo records
-      tags:
-      - Templete-Mongo
-  /api/templete-mongo/create:
-    post:
+  /api/account/update-me:
+    put:
       consumes:
       - application/json
       parameters:
-      - description: Record data
+      - description: Account update info
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/requestmodels.CreateTempleteRequest'
+          $ref: '#/definitions/requestmodels.UpdateAccountRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contracts.TempleteMongoContract'
+            $ref: '#/definitions/contracts.AccountContract'
         "400":
           description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
@@ -192,13 +265,102 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Create templete mongo record
+      summary: Update current account
       tags:
-      - Templete-Mongo
-  /api/templete-mongo/delete/{id}:
+      - Account
+  /api/order/create:
     post:
+      consumes:
+      - application/json
       parameters:
-      - description: Record ID
+      - description: Order creation payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requestmodels.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/contracts.OrderContract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new order
+      tags:
+      - Order
+  /api/order/delete/{id}:
+    delete:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel/delete a draft order
+      tags:
+      - Order
+  /api/order/get/{id}:
+    get:
+      parameters:
+      - description: Order ID
         in: path
         name: id
         required: true
@@ -209,7 +371,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contracts.TempleteMongoContract'
+            $ref: '#/definitions/contracts.OrderContract'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -224,26 +398,43 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Delete templete mongo record
+      summary: Get order by ID
       tags:
-      - Templete-Mongo
-  /api/templete-mongo/get:
+      - Order
+  /api/order/list:
     get:
       parameters:
-      - in: query
-        name: end_date
+      - description: Filter by status
+        in: query
+        name: status
         type: string
-      - in: query
+      - description: Filter by template code
+        in: query
+        name: template_code
+        type: string
+      - description: Filter from date (RFC3339)
+        in: query
+        name: from_date
+        type: string
+      - description: Filter to date (RFC3339)
+        in: query
+        name: to_date
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
         name: limit
         type: integer
-      - in: query
-        name: search
+      - description: Sort field
+        in: query
+        name: sort_by
         type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: start_date
+      - description: Sort direction (asc/desc)
+        in: query
+        name: order
         type: string
       produces:
       - application/json
@@ -252,82 +443,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/contracts.TempleteMongoContract'
+              $ref: '#/definitions/contracts.OrderContract'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Get all templete mongo records
-      tags:
-      - Templete-Mongo
-  /api/templete-mongo/get/{id}:
-    get:
-      parameters:
-      - description: Record ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/contracts.TempleteMongoContract'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Get templete mongo record by ID
-      tags:
-      - Templete-Mongo
-  /api/templete-mongo/update/{id}:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Record ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Record data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requestmodels.UpdateTempleteRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/contracts.TempleteMongoContract'
         "400":
           description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             additionalProperties:
               type: string
@@ -340,63 +465,62 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Update templete mongo record
+      summary: List orders for current account
       tags:
-      - Templete-Mongo
-  /api/templete-mysql/count:
-    get:
-      parameters:
-      - in: query
-        name: end_date
-        type: string
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: start_date
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Count templete mysql records
-      tags:
-      - Templete-MySQL
-  /api/templete-mysql/create:
-    post:
+      - Order
+  /api/order/update/{id}:
+    put:
       consumes:
       - application/json
       parameters:
-      - description: Record data
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order update payload
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/requestmodels.CreateTempleteRequest'
+          $ref: '#/definitions/requestmodels.UpdateOrderRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contracts.TemplateMysqlContract'
+            $ref: '#/definitions/contracts.OrderContract'
         "400":
           description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
@@ -405,24 +529,45 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Create templete mysql record
+      summary: Update a draft order
       tags:
-      - Templete-MySQL
-  /api/templete-mysql/delete/{id}:
+      - Order
+  /api/payment/generate-link:
     post:
+      consumes:
+      - application/json
       parameters:
-      - description: Record ID
-        in: path
-        name: id
+      - description: Order ID and amount
+        in: body
+        name: body
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/requestmodels.GeneratePaymeLinkRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contracts.TemplateMysqlContract'
+            $ref: '#/definitions/contracts.PaymentLinkContract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -437,27 +582,55 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Delete templete mysql record
+      summary: Generate a Payme payment link for an order
       tags:
-      - Templete-MySQL
-  /api/templete-mysql/get:
+      - Payment
+  /api/transaction/get/{order_id}:
     get:
       parameters:
-      - in: query
-        name: end_date
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
         type: string
-      - in: query
-        name: limit
-        type: integer
-      - in: query
-        name: search
-        type: string
-      - in: query
-        name: skip
-        type: integer
-      - in: query
-        name: start_date
-        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.TransactionContract'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get transaction by order ID
+      tags:
+      - Transaction
+  /api/transaction/list:
+    get:
       produces:
       - application/json
       responses:
@@ -465,36 +638,10 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/contracts.TemplateMysqlContract'
+              $ref: '#/definitions/contracts.TransactionContract'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Get all templete mysql records
-      tags:
-      - Templete-MySQL
-  /api/templete-mysql/get/{id}:
-    get:
-      parameters:
-      - description: Record ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/contracts.TemplateMysqlContract'
-        "404":
-          description: Not Found
+        "401":
+          description: Unauthorized
           schema:
             additionalProperties:
               type: string
@@ -507,38 +654,55 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Get templete mysql record by ID
+      summary: List transactions for current account
       tags:
-      - Templete-MySQL
-  /api/templete-mysql/update/{id}:
+      - Transaction
+  /payme:
     post:
       consumes:
       - application/json
+      description: 'Handles Payme JSON-RPC calls: CheckPerformTransaction, CreateTransaction,
+        PerformTransaction, CancelTransaction, CheckTransaction, GetStatement'
       parameters:
-      - description: Record ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Record data
+      - description: Payme JSON-RPC request
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/requestmodels.UpdateTempleteRequest'
+          properties:
+            method:
+              type: string
+            params:
+              type: object
+          type: object
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/contracts.TemplateMysqlContract'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
+      summary: Payme payment gateway webhook
+      tags:
+      - Payment
+  /public/i/{id}:
+    get:
+      description: Returns the invitation details and increments view count. No authentication
+        required.
+      parameters:
+      - description: Invitation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.OrderContract'
         "404":
           description: Not Found
           schema:
@@ -551,11 +715,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      security:
-      - BearerAuth: []
-      summary: Update templete mysql record
+      summary: Get public invitation by ID
       tags:
-      - Templete-MySQL
+      - Invitation
 schemes:
 - http
 - https

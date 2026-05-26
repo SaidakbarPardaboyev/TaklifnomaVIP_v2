@@ -23,3 +23,17 @@ func VerifyCodeSwagger() {}
 // @Failure      401  {object} map[string]string
 // @Router       /api/account/get-me [get]
 func GetMeSwagger() {}
+
+// UpdateMeSwagger godoc
+// @Summary      Update current account
+// @Tags         Account
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body  requestmodels.UpdateAccountRequest  true  "Account update info"
+// @Success      200  {object} contracts.AccountContract
+// @Failure      400  {object} map[string]string
+// @Failure      401  {object} map[string]string
+// @Failure      500  {object} map[string]string
+// @Router       /api/account/update-me [put]
+func UpdateMeSwagger() {}

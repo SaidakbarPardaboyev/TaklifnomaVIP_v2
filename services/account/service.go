@@ -1,14 +1,14 @@
 package account
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+
+	"github.com/google/uuid"
 	"saidakbar.origin/caching"
 	"saidakbar.origin/caching/models"
 	"saidakbar.origin/core"
 	"saidakbar.origin/dto"
 	"saidakbar.origin/repository"
-
-	"github.com/google/uuid"
 )
 
 type accountService struct {
@@ -32,23 +32,15 @@ func NewService(
 func (s *accountService) VerifyCode(model VerifyCodeModel) (result *dto.VerifyCodeResult, err error) {
 	result = new(dto.VerifyCodeResult)
 
-	var accID, accFullName string
-	var accIsActive bool
-
 	// get account
-	{
-		acc, getErr := s.accountRepo.GetByPhone(model.Phone)
-		if getErr != nil {
-			err = getErr
-			return
-		}
-		if acc == nil {
-			result.UserNotFound = true
-			return
-		}
-		accID = acc.ID
-		accFullName = acc.FullName
-		accIsActive = acc.IsActive
+	acc, getErr := s.accountRepo.GetByPhone(model.Phone)
+	if getErr != nil {
+		err = getErr
+		return
+	}
+	if acc == nil {
+		result.UserNotFound = true
+		return
 	}
 
 	// validate OTP
@@ -62,11 +54,9 @@ func (s *accountService) VerifyCode(model VerifyCodeModel) (result *dto.VerifyCo
 	}
 
 	// activate account on first login
-	{
-		if !accIsActive {
-			if err = s.accountRepo.Activate(accID); err != nil {
-				return
-			}
+	if !acc.IsActive {
+		if err = s.accountRepo.Activate(acc.ID); err != nil {
+			return
 		}
 	}
 
@@ -74,14 +64,16 @@ func (s *accountService) VerifyCode(model VerifyCodeModel) (result *dto.VerifyCo
 	{
 		token := uuid.New().String()
 		cachedAccount := &models.Account{
-			ID:        primitive.NewObjectID(),
-			Username:  model.Phone,
-			Name:      accFullName,
+			ID:        acc.ID,
+			FullName:  acc.FullName,
+			Phone:     acc.Phone,
+			ChatID:    acc.ChatID,
+			IsActive:  acc.IsActive,
+			CreatedAt: acc.CreatedAt,
+			UpdatedAt: acc.UpdatedAt,
+			DeletedAt: acc.DeletedAt,
+			IsDeleted: acc.IsDeleted,
 			TokenType: 0,
-			ActiveOrganization: &models.Organization{
-				ID:   accID,
-				Name: accFullName,
-			},
 		}
 		if err = s.tokenCache.SetAccount(token, cachedAccount, core.TokenTTL); err != nil {
 			return
@@ -90,4 +82,19 @@ func (s *accountService) VerifyCode(model VerifyCodeModel) (result *dto.VerifyCo
 	}
 
 	return
+}
+
+func (s *accountService) UpdateAccount(model UpdateAccountModel) (*UpdateAccountResult, error) {
+	acc, err := s.accountRepo.GetByID(model.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	acc.FullName = model.FullName
+	acc.UpdatedAt = time.Now()
+	if err = s.accountRepo.Update(acc); err != nil {
+		return nil, err
+	}
+
+	return &UpdateAccountResult{Account: acc}, nil
 }

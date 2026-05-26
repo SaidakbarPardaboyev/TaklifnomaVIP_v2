@@ -39,7 +39,7 @@ func (c *paymentController) GeneratePaymeLink(ctx *gin.Context) {
 	acc := middlewares.GetAccount(ctx)
 
 	switch result, err := c.paymentService.GeneratePaymeLink(payment_service.GeneratePaymeLinkModel{
-		AccountID: acc.ActiveOrganization.ID,
+		AccountID: acc.ID,
 		OrderID:   req.OrderID,
 		Amount:    req.Amount,
 	}); {
@@ -96,21 +96,18 @@ func (c *paymentController) checkPerformTransaction(ctx *gin.Context, params jso
 		return
 	}
 
-	result, err := c.paymentService.CheckPerformTransaction(payment_service.CheckPerformTransactionModel{
+	switch result, err := c.paymentService.CheckPerformTransaction(payment_service.CheckPerformTransactionModel{
 		AccountID: req.Account.AccountID,
 		OrderID:   req.Account.OrderID,
 		Amount:    req.Amount,
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(core.PaymeInternalServerError, err.Error(), err.Error(), err.Error()))
-		return
-	}
-	if !result.Succeed {
+	case !result.Succeed:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(result.ErrorCode, result.MessageUz, result.MessageRu, result.MessageEn))
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.CreateCheckPerformTransactionContract(result.Order))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.CreateCheckPerformTransactionContract(result.Order))
 }
 
 func (c *paymentController) createTransaction(ctx *gin.Context, params json.RawMessage) {
@@ -124,23 +121,20 @@ func (c *paymentController) createTransaction(ctx *gin.Context, params json.RawM
 		return
 	}
 
-	result, err := c.paymentService.CreateTransaction(payment_service.CreateTransactionModel{
+	switch result, err := c.paymentService.CreateTransaction(payment_service.CreateTransactionModel{
 		AccountID: req.Account.AccountID,
 		OrderID:   req.Account.OrderID,
 		PaymentID: req.PaymentID,
 		Amount:    req.Amount,
 		TimePayme: req.TimePayme,
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(core.PaymeInternalServerError, err.Error(), err.Error(), err.Error()))
-		return
-	}
-	if !result.Succeed {
+	case !result.Succeed:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(result.ErrorCode, result.MessageUz, result.MessageRu, result.MessageEn))
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.BuildCreateTransactionContract(result.Transaction))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.BuildCreateTransactionContract(result.Transaction))
 }
 
 func (c *paymentController) performTransaction(ctx *gin.Context, params json.RawMessage) {
@@ -154,19 +148,16 @@ func (c *paymentController) performTransaction(ctx *gin.Context, params json.Raw
 		return
 	}
 
-	result, err := c.paymentService.PerformTransaction(payment_service.PerformTransactionModel{
+	switch result, err := c.paymentService.PerformTransaction(payment_service.PerformTransactionModel{
 		PaymentID: req.ID,
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(core.PaymeInternalServerError, err.Error(), err.Error(), err.Error()))
-		return
-	}
-	if !result.Succeed {
+	case !result.Succeed:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(result.ErrorCode, result.MessageUz, result.MessageRu, result.MessageEn))
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.BuildPerformTransactionContract(result.Transaction))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.BuildPerformTransactionContract(result.Transaction))
 }
 
 func (c *paymentController) cancelTransaction(ctx *gin.Context, params json.RawMessage) {
@@ -180,20 +171,17 @@ func (c *paymentController) cancelTransaction(ctx *gin.Context, params json.RawM
 		return
 	}
 
-	result, err := c.paymentService.CancelTransaction(payment_service.CancelTransactionModel{
+	switch result, err := c.paymentService.CancelTransaction(payment_service.CancelTransactionModel{
 		PaymentID: req.ID,
 		Reason:    req.Reason,
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(core.PaymeInternalServerError, err.Error(), err.Error(), err.Error()))
-		return
-	}
-	if !result.Succeed {
+	case !result.Succeed:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(result.ErrorCode, result.MessageUz, result.MessageRu, result.MessageEn))
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.BuildCancelTransactionContract(result.Transaction))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.BuildCancelTransactionContract(result.Transaction))
 }
 
 func (c *paymentController) checkTransaction(ctx *gin.Context, params json.RawMessage) {
@@ -207,19 +195,16 @@ func (c *paymentController) checkTransaction(ctx *gin.Context, params json.RawMe
 		return
 	}
 
-	result, err := c.paymentService.CheckTransaction(payment_service.CheckTransactionModel{
+	switch result, err := c.paymentService.CheckTransaction(payment_service.CheckTransactionModel{
 		PaymentID: req.ID,
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(core.PaymeInternalServerError, err.Error(), err.Error(), err.Error()))
-		return
-	}
-	if !result.Succeed {
+	case !result.Succeed:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(result.ErrorCode, result.MessageUz, result.MessageRu, result.MessageEn))
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.BuildCheckTransactionContract(result.Transaction))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.BuildCheckTransactionContract(result.Transaction))
 }
 
 func (c *paymentController) getStatement(ctx *gin.Context, params json.RawMessage) {
@@ -233,14 +218,13 @@ func (c *paymentController) getStatement(ctx *gin.Context, params json.RawMessag
 		return
 	}
 
-	result, err := c.paymentService.GetStatement(payment_service.GetStatementModel{
+	switch result, err := c.paymentService.GetStatement(payment_service.GetStatementModel{
 		From: req.From,
 		To:   req.To,
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusOK, contracts.CreatePaymeErrorContract(core.PaymeInternalServerError, err.Error(), err.Error(), err.Error()))
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.BuildGetStatementContract(result.Transactions))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.BuildGetStatementContract(result.Transactions))
 }

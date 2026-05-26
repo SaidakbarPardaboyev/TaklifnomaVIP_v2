@@ -25,15 +25,14 @@ func NewTransactionController(transactionService transaction_service.Service) Tr
 func (c *transactionController) GetList(ctx *gin.Context) {
 	acc := middlewares.GetAccount(ctx)
 
-	result, err := c.transactionService.GetList(transaction_service.GetListModel{
-		AccountID: acc.ActiveOrganization.ID,
-	})
-	if err != nil {
+	switch result, err := c.transactionService.GetList(transaction_service.GetListModel{
+		AccountID: acc.ID,
+	}); {
+	case err != nil:
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	default:
+		ctx.JSON(http.StatusOK, contracts.BuildTransactionListContract(result.Transactions))
 	}
-
-	ctx.JSON(http.StatusOK, contracts.BuildTransactionListContract(result.Transactions))
 }
 
 func (c *transactionController) GetByOrderID(ctx *gin.Context) {
@@ -42,7 +41,7 @@ func (c *transactionController) GetByOrderID(ctx *gin.Context) {
 
 	switch result, err := c.transactionService.GetByOrderID(transaction_service.GetByOrderIDModel{
 		OrderID:   orderID,
-		AccountID: acc.ActiveOrganization.ID,
+		AccountID: acc.ID,
 	}); {
 	case err != nil:
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

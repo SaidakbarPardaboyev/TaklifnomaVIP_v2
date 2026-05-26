@@ -8,14 +8,12 @@ import (
 	account_service "saidakbar.origin/services/account"
 	order_service "saidakbar.origin/services/order"
 	payment_service "saidakbar.origin/services/payment"
-	templete_mongo "saidakbar.origin/services/templete-mongo"
-	templete_mysql "saidakbar.origin/services/templete-mysql"
 	transaction_service "saidakbar.origin/services/transaction"
 )
 
-// @title           Templete API
+// @title           TaklifnomaVIP API
 // @version         1.0
-// @description     Templete project API
+// @description     Wedding invitation platform API
 // @host            localhost:8080
 // @BasePath        /
 // @schemes         http https
@@ -33,8 +31,6 @@ type apiServer struct {
 	tokenCache             caching.TokenCache
 	clientCredentialsCache caching.ClientCredentialsCache
 	accountService         account_service.Service
-	templeteMongoService   templete_mongo.Service
-	templatMysqlService    templete_mysql.Service
 	orderService           order_service.Service
 	paymentService         payment_service.Service
 	transactionService     transaction_service.Service
@@ -52,8 +48,6 @@ func NewApiServer(
 	tokenCache caching.TokenCache,
 	clientCredentialsCache caching.ClientCredentialsCache,
 	accountService account_service.Service,
-	templeteMongoService templete_mongo.Service,
-	templatMysqlService templete_mysql.Service,
 	orderService order_service.Service,
 	paymentService payment_service.Service,
 	transactionService transaction_service.Service,
@@ -66,8 +60,6 @@ func NewApiServer(
 		tokenCache:             tokenCache,
 		clientCredentialsCache: clientCredentialsCache,
 		accountService:         accountService,
-		templeteMongoService:   templeteMongoService,
-		templatMysqlService:    templatMysqlService,
 		orderService:           orderService,
 		paymentService:         paymentService,
 		transactionService:     transactionService,
